@@ -21,6 +21,77 @@ import { cn } from "@/lib/utils";
 type Status = "idle" | "submitting" | "success" | "error";
 type FieldErrors = Partial<Record<keyof ContactInput, string[]>>;
 
+/**
+ * Web3Forms is submitted from the browser, which is the integration it
+ * documents and supports. Proxying it through the route handler was tried and
+ * returned a Cloudflare 403 in production.
+ *
+ * The key is therefore public. That is true of every Web3Forms integration by
+ * design — their own example puts it in a hidden input — and it only permits
+ * submitting to this one form. Rotate it if it attracts spam.
+ *
+ * Without a key the form falls back to POSTing /api/contact, which delivers
+ * through Resend.
+ */
+const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY?.trim();
+
+type SendResult = { success: true } | { success: false; error: string };
+
+async function sendViaWeb3Forms(data: ContactInput): Promise<SendResult> {
+  // FormData rather than JSON: an application/json body triggers a CORS
+  // preflight, while multipart/form-data is CORS-safelisted and needs none.
+  // Same shape a native <form> POST sends, so it has the fewest ways to fail.
+  const fields = new FormData();
+  fields.append("access_key", WEB3FORMS_KEY ?? "");
+  fields.append("subject", `New enquiry — ${data.name} · ${data.projectType}`);
+  fields.append("from_name", data.name);
+  fields.append("name", data.name);
+  fields.append("email", data.email);
+  fields.append("company", data.company || "—");
+  fields.append("project_type", data.projectType);
+  fields.append("budget", data.budget);
+  fields.append("message", data.message);
+
+  const res = await fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    body: fields,
+  });
+
+  const json = (await res.json().catch(() => null)) as
+    | { success?: boolean; message?: string }
+    | null;
+
+  if (!res.ok || !json?.success) {
+    console.error("[contact] Web3Forms rejected the send:", res.status, json?.message);
+    return {
+      success: false,
+      error: `Sending failed. Please email me directly at ${site.email}.`,
+    };
+  }
+  return { success: true };
+}
+
+async function sendViaRoute(
+  data: ContactInput,
+  setErrors: (e: FieldErrors) => void
+): Promise<SendResult> {
+  const res = await fetch("/api/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    setErrors((json.fieldErrors ?? {}) as FieldErrors);
+    return {
+      success: false,
+      error: json.error ?? `Something went wrong. Email me at ${site.email}.`,
+    };
+  }
+  return { success: true };
+}
+
 const fieldBase =
   "w-full rounded-xl border bg-surface px-4 py-3 text-fg placeholder:text-muted/70 " +
   "transition-colors focus:border-accent focus:outline-none";
@@ -83,21 +154,23 @@ export function ContactForm() {
     }
 
     setErrors({});
+
+    // Honeypot: look like a success and send nothing at all.
+    if (parsed.data.website) {
+      form.reset();
+      setStatus("success");
+      return;
+    }
+
     setStatus("submitting");
 
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
-      });
-      const json = await res.json().catch(() => ({}));
+      const ok = WEB3FORMS_KEY
+        ? await sendViaWeb3Forms(parsed.data)
+        : await sendViaRoute(parsed.data, setErrors);
 
-      if (!res.ok) {
-        setErrors((json.fieldErrors ?? {}) as FieldErrors);
-        setFormError(
-          json.error ?? `Something went wrong. Email me at ${site.email}.`
-        );
+      if (!ok.success) {
+        setFormError(ok.error);
         setStatus("error");
         return;
       }

@@ -46,56 +46,16 @@ function singleLine(value: string) {
 type Delivery = { status: "sent" | "failed" | "unconfigured" };
 
 /**
- * Web3Forms first, Resend as an alternative. Both run server-side, so the
- * access key never reaches the browser — Web3Forms' own example puts it in a
- * hidden input, which works but publishes the key to anyone viewing source.
+ * Resend only. Web3Forms is not called from here — routing it through the
+ * server returned a Cloudflare 403 in production, and the browser submission
+ * their docs describe is the supported path. See
+ * components/sections/contact-form.tsx.
  */
 async function deliver(data: ContactInput): Promise<Delivery> {
-  const web3formsKey = process.env.WEB3FORMS_ACCESS_KEY?.trim();
-  if (web3formsKey) return sendViaWeb3Forms(web3formsKey, data);
-
   const resendKey = process.env.RESEND_API_KEY?.trim();
   if (resendKey) return sendViaResend(resendKey, data);
 
   return { status: "unconfigured" };
-}
-
-async function sendViaWeb3Forms(
-  accessKey: string,
-  data: ContactInput
-): Promise<Delivery> {
-  try {
-    const res = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        access_key: accessKey,
-        subject: `New enquiry — ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
-        from_name: singleLine(data.name),
-        // Web3Forms sets Reply-To from this, so replying reaches the sender.
-        email: data.email,
-        name: data.name,
-        company: data.company || "—",
-        project_type: data.projectType,
-        budget: data.budget,
-        message: data.message,
-      }),
-      signal: AbortSignal.timeout(15_000),
-    });
-
-    const json = (await res.json().catch(() => null)) as
-      | { success?: boolean; message?: string }
-      | null;
-
-    if (!res.ok || !json?.success) {
-      console.error("[contact] Web3Forms rejected the send:", res.status, json?.message);
-      return { status: "failed" };
-    }
-    return { status: "sent" };
-  } catch (err) {
-    console.error("[contact] Web3Forms request failed:", err);
-    return { status: "failed" };
-  }
 }
 
 async function sendViaResend(
