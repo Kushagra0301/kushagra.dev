@@ -27,7 +27,7 @@ type FieldErrors = Partial<Record<keyof ContactInput, string[]>>;
  * returned a Cloudflare 403 in production.
  *
  * The key is therefore public. That is true of every Web3Forms integration by
- * design — their own example puts it in a hidden input — and it only permits
+ * design (their own example puts it in a hidden input) and it only permits
  * submitting to this one form. Rotate it if it attracts spam.
  *
  * Without a key the form falls back to POSTing /api/contact, which delivers
@@ -43,11 +43,11 @@ async function sendViaWeb3Forms(data: ContactInput): Promise<SendResult> {
   // Same shape a native <form> POST sends, so it has the fewest ways to fail.
   const fields = new FormData();
   fields.append("access_key", WEB3FORMS_KEY ?? "");
-  fields.append("subject", `New enquiry — ${data.name} · ${data.projectType}`);
+  fields.append("subject", `New enquiry from ${data.name} · ${data.projectType}`);
   fields.append("from_name", data.name);
   fields.append("name", data.name);
   fields.append("email", data.email);
-  fields.append("company", data.company || "—");
+  fields.append("company", data.company || "Not given");
   fields.append("project_type", data.projectType);
   fields.append("budget", data.budget);
   fields.append("message", data.message);
@@ -202,7 +202,7 @@ export function ContactForm() {
               Message sent.
             </h3>
             <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">
-              Thanks — I read every enquiry myself and usually reply within one
+              Thanks. I read every enquiry myself and usually reply within one
               working day.
             </p>
             <Button

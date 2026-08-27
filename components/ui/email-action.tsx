@@ -33,7 +33,7 @@ async function copyToClipboard(text: string) {
 
 /**
  * A bare `mailto:` is a dead end on a desktop with no mail client registered
- * — the click does nothing at all and the user is left guessing. Clicking
+ * the click does nothing at all and the user is left guessing. Clicking
  * here always copies the address and says so, with the mail app and Gmail
  * offered explicitly alongside. Same markup on every device, so there is no
  * hydration branch on pointer type.

@@ -36,8 +36,8 @@ export function CTASection() {
               visiting.
             </h2>
             <p className="mx-auto mt-6 max-w-[46ch] text-lead text-muted">
-              Tell me what you are building and what it has to achieve. You will
-              get a straight answer on scope, price and timeline — usually within
+              Tell me what you&apos;re building and what it has to achieve. You&apos;ll
+              get a straight answer on scope, price and timeline, usually within
               a day.
             </p>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">

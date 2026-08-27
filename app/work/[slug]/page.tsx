@@ -29,7 +29,7 @@ export default async function CaseStudyPage(props: PageProps<"/work/[slug]">) {
   const { slug } = await props.params;
   const project = getProject(slug);
 
-  // Concept builds have no written case study — there is no page for them.
+  // Concept builds have no written case study, so there is no page for them.
   if (!project?.caseStudy) notFound();
 
   const cs = project.caseStudy;

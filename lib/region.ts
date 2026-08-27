@@ -12,7 +12,7 @@ function detect(): Region {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "IN" || stored === "INTL") return stored;
   } catch {
-    // Private mode or blocked site data — fall through to the timezone probe.
+    // Private mode or blocked site data, so fall through to the timezone probe.
   }
 
   try {

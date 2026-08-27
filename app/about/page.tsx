@@ -11,7 +11,7 @@ import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
   title: "About",
-  description: `${site.name} — freelance web developer and designer in ${site.location}. How I work, what I build with, and what you can expect.`,
+  description: `${site.name}, freelance web developer and designer in ${site.location}. How I work, what I build with, and what you can expect.`,
   path: "/about",
 });
 

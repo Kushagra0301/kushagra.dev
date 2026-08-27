@@ -67,9 +67,9 @@ export function Hero() {
             variants={fadeUp}
             className="mt-8 max-w-[52ch] text-lead text-muted"
           >
-            I&apos;m {site.firstName} — a freelance web developer and designer
-            based in {site.location}. I take businesses from a blank page to a
-            fast, accessible, conversion-focused site: design, build, launch.
+            I&apos;m {site.firstName}, a freelance web developer and designer based
+            in {site.location}. I take businesses from a blank page to a fast,
+            accessible site that actually converts. Design, build, launch.
           </motion.p>
 
           <motion.div

@@ -17,7 +17,7 @@ function resolveSiteUrl(): string {
     try {
       return new URL(withProtocol).origin;
     } catch {
-      // Not a usable URL — fall through to the next candidate.
+      // Not a usable URL, so fall through to the next candidate.
     }
   }
 

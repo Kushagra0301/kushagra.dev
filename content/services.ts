@@ -10,7 +10,7 @@ export const services: Service[] = [
     id: "web-design",
     title: "Web Design",
     blurb:
-      "Interfaces built around a single decision you want the visitor to make — not a moodboard with buttons bolted on.",
+      "Every page gets one job. I design around the decision you want a visitor to make, then build the layout to lead them to it.",
     deliverables: [
       "Information architecture & wireframes",
       "High-fidelity design across breakpoints",
@@ -21,7 +21,7 @@ export const services: Service[] = [
     id: "development",
     title: "Development",
     blurb:
-      "React and Next.js builds that stay fast on a mid-range Android on Indian 4G, not just on a MacBook.",
+      "React and Next.js builds that stay quick on a mid-range Android over patchy 4G, which is what most of your visitors are using.",
     deliverables: [
       "Next.js / React / TypeScript",
       "Tailwind CSS, design-token driven",
@@ -32,7 +32,7 @@ export const services: Service[] = [
     id: "motion",
     title: "Motion & Interaction",
     blurb:
-      "Scroll-driven storytelling and micro-interaction that carries meaning — and gets out of the way when a user asks it to.",
+      "Scroll and hover work that guides attention where you want it, and backs off the moment someone's device asks it to.",
     deliverables: [
       "Scroll and entrance choreography",
       "Hover, cursor and state detail",
@@ -43,7 +43,7 @@ export const services: Service[] = [
     id: "landing",
     title: "Landing Pages",
     blurb:
-      "One page, one job. Written, designed and shipped as a unit so the copy and layout argue the same case.",
+      "One page with one goal. I write, design and ship it as a single piece, so the words and the layout say the same thing.",
     deliverables: [
       "Conversion-focused copy structure",
       "Analytics & event tracking",
@@ -54,7 +54,7 @@ export const services: Service[] = [
     id: "performance",
     title: "Performance & SEO",
     blurb:
-      "Core Web Vitals, metadata, structured data and accessibility handled as build requirements, not a cleanup pass.",
+      "Core Web Vitals, metadata, structured data and accessibility are part of the build from day one, so there's no scramble to fix them before launch.",
     deliverables: [
       "Lighthouse 95+ across the board",
       "Semantic HTML & WCAG AA contrast",
@@ -65,7 +65,7 @@ export const services: Service[] = [
     id: "maintenance",
     title: "Maintenance & Support",
     blurb:
-      "Someone who already knows the codebase, on hand after launch — so a broken form on a Friday is a message, not a crisis.",
+      "After launch you keep someone who already knows the codebase. If a form breaks on a Friday, you send one message and it gets handled.",
     deliverables: [
       "Monthly retainer or hourly",
       "Dependency & security updates",
@@ -89,7 +89,7 @@ export const regions: Record<
   INTL: {
     label: "International",
     symbol: "$",
-    note: "Prices are in USD and exclude third-party costs such as domains, hosting or stock imagery. Happy to work through Upwork escrow or directly — your call.",
+    note: "Prices are in USD and exclude third-party costs such as domains, hosting or stock imagery. Happy to work through Upwork escrow or directly, whichever you prefer.",
   },
 };
 
@@ -150,12 +150,12 @@ export const process = [
   {
     step: "01",
     title: "Scope",
-    body: "A call, then a written brief: what the site has to achieve, for whom, by when, and what counts as done. Fixed price, no surprises.",
+    body: "A call, then a written brief covering what the site has to achieve, for whom, by when, and what counts as done. Fixed price, no surprises later.",
   },
   {
     step: "02",
     title: "Design",
-    body: "Structure first, then surface. You see real layouts with real copy — not a lorem-ipsum mockup that falls apart on contact with content.",
+    body: "Structure first, then surface. You see real layouts with your real copy in them, so nothing falls apart the moment the placeholder text comes out.",
   },
   {
     step: "03",
@@ -165,14 +165,14 @@ export const process = [
   {
     step: "04",
     title: "Launch",
-    body: "Performance, accessibility and SEO pass, then deploy. You get the repo, a handover walkthrough, and two weeks of post-launch fixes.",
+    body: "A final pass over performance, accessibility and SEO, then we deploy. You get the repo, a handover walkthrough, and two weeks of fixes after launch.",
   },
 ] as const;
 
 export const faqs = [
   {
     q: "How do we work together?",
-    a: "Through Upwork if you prefer the escrow and protections, or directly by email — whichever you're more comfortable with. Either way you get a written scope before anything starts.",
+    a: "Through Upwork if you'd rather have the escrow and protections, or directly by email. Whichever suits you. Either way you get a written scope before anything starts.",
   },
   {
     q: "What do you need from me to start?",
@@ -184,7 +184,7 @@ export const faqs = [
   },
   {
     q: "Who owns the code?",
-    a: "You do, in full, on final payment. You get the repository and the deployment — nothing is locked to me.",
+    a: "You do, in full, on final payment. You get the repository and the deployment, and nothing is locked to me.",
   },
   {
     q: "What if I need changes after launch?",

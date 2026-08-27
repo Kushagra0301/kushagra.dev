@@ -46,7 +46,7 @@ function singleLine(value: string) {
 type Delivery = { status: "sent" | "failed" | "unconfigured" };
 
 /**
- * Resend only. Web3Forms is not called from here — routing it through the
+ * Resend only. Web3Forms is not called from here, because routing it through the
  * server returned a Cloudflare 403 in production, and the browser submission
  * their docs describe is the supported path. See
  * components/sections/contact-form.tsx.
@@ -71,7 +71,7 @@ async function sendViaResend(
       from,
       to,
       replyTo: data.email,
-      subject: `New enquiry — ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
+      subject: `New enquiry from ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
       html: `
         <h2>New project enquiry</h2>
         <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
 
   const data = parsed.data;
 
-  // Honeypot tripped — respond exactly as if it worked, and send nothing.
+  // Honeypot tripped: respond exactly as if it worked, and send nothing.
   if (data.website) {
     return NextResponse.json({ ok: true });
   }
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
   const delivery = await deliver(data);
 
   if (delivery.status === "unconfigured") {
-    console.error("[contact] No delivery provider configured — message not sent.");
+    console.error("[contact] No delivery provider configured, message not sent.");
     return NextResponse.json(
       {
         error: `The form is not wired up yet. Please email me directly at ${site.email}.`,

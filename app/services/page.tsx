@@ -12,7 +12,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Services & Pricing",
   description:
-    "Web design, development, motion, landing pages and performance work — with transparent pricing, a clear process and honest answers.",
+    "Web design, development, motion, landing pages and performance work, with clear pricing, a clear process and honest answers.",
   path: "/services",
 });
 

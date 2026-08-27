@@ -65,7 +65,7 @@ export function Header() {
         <Link
           href="/"
           className="-my-2 inline-flex h-11 items-center font-display text-lg font-bold tracking-tight transition-colors duration-150 hover:text-accent-ink"
-          aria-label={`${site.name} — home`}
+          aria-label={`${site.name}, home`}
         >
           {site.firstName}
           <span className="text-accent-ink">.</span>

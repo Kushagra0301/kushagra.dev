@@ -416,7 +416,7 @@ export default function DotCursor(props: Props) {
         };
     }, []);
 
-    // Sits in the component's own frame, centred — the cue to hover.
+    // Sits in the component's own frame, centred: the cue to hover.
     const labelNode = label ? (
         <div
             style={{

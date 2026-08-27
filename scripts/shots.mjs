@@ -98,7 +98,7 @@ for (const project of queue) {
     console.log(`  captured  ${project.slug}`);
     ok += 1;
   } catch (err) {
-    console.error(`  FAILED    ${project.slug} — ${err.message}`);
+    console.error(`  FAILED    ${project.slug}: ${err.message}`);
     failed += 1;
   } finally {
     await page.close();

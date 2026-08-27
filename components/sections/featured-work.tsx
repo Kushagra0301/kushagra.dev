@@ -21,7 +21,7 @@ export function FeaturedWork() {
           constraints.
         </>
       }
-      lead="Two of these were built for people with money and deadlines on the line. The rest are concept builds — self-initiated, shipped live, and labelled as such."
+      lead="Two of these were built for people with real money and real deadlines on the line. The rest are concept builds: my own ideas, shipped live, and labelled that way."
     >
       <RevealGroup className="grid gap-10 md:grid-cols-2 md:gap-8">
         {featuredProjects.map((project, i) => (
