@@ -75,12 +75,6 @@ export const services: Service[] = [
   },
 ];
 
-/**
- * Pricing is split by market rather than converted between currencies.
- * ₹15,000 and $450 are not the same number in two currencies — they are two
- * different market positions, and quoting an Indian SMB in converted USD
- * loses the lead before the first reply.
- */
 export type Region = "IN" | "INTL";
 
 export const regions: Record<
@@ -109,9 +103,6 @@ export type Tier = {
   featured?: boolean;
 };
 
-/**
- * TODO: placeholder ranges — overwrite both columns with your actual rates.
- */
 export const tiers: Tier[] = [
   {
     name: "Landing Page",

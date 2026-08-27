@@ -6,8 +6,6 @@ import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 
 export function FeaturedWork() {
-  // Three concepts is enough to show range on the landing page; the rest
-  // live on /work.
   const concepts = conceptProjects.slice(0, 3);
 
   return (

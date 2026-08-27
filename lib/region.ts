@@ -1,22 +1,5 @@
 import type { Region } from "@/content/services";
 
-/**
- * Which pricing market the visitor sees, held in a tiny external store and
- * read with useSyncExternalStore.
- *
- * Two things force this shape rather than useState:
- *
- * 1. Resolving the region inside an effect trips `react-hooks/set-state-in-effect`
- *    (the same rule that already reshaped components/layout/theme-toggle.tsx).
- * 2. Resolving it eagerly during render would run on the server too — and these
- *    pages are prerendered at build time, on a machine sitting in Asia/Kolkata.
- *    Every visitor would get ₹ baked into their HTML.
- *
- * getServerSnapshot therefore always returns INTL, and the client corrects it
- * on hydration. That's exactly what useSyncExternalStore's server snapshot is
- * for, so there is no hydration mismatch to suppress.
- */
-
 const STORAGE_KEY = "pricing-region";
 
 const IN_TIMEZONES = new Set(["Asia/Kolkata", "Asia/Calcutta"]);
@@ -47,6 +30,7 @@ export function getRegionSnapshot(): Region {
   return cached;
 }
 
+// Always INTL: these pages prerender on a machine in Asia/Kolkata.
 export function getServerRegionSnapshot(): Region {
   return "INTL";
 }

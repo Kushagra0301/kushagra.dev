@@ -1,5 +1,3 @@
-// Dot Cursor — Originkit
-// Using component defaults.
 
 "use client";
 
@@ -28,8 +26,6 @@ const DEFAULT_LABEL_FONT: React.CSSProperties = {
     textAlign: "left",
 } as React.CSSProperties;
 
-// Follow lag, in seconds. Matches Advanced Cursor — small enough that the dot
-// tracks the pointer without a visible trailing offset.
 const FOLLOW_TAU = 0.01;
 // Dot ⇄ ring morph rate, pinned to 10.
 const SNAPPINESS = 10;
@@ -103,8 +99,6 @@ export default function DotCursor(props: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const frameRef = useRef<HTMLDivElement>(null);
 
-    // Live props for the rAF loop — mutated in place so tweaking a control
-    // never tears down the canvas or resets the dot to the centre.
     const live = useRef({
         headColor,
         trailColor,
@@ -112,9 +106,6 @@ export default function DotCursor(props: Props) {
         trailLength,
         trailThickness,
     });
-    // Synced in an effect rather than assigned during render: mutating a ref
-    // mid-render is a React rule violation, and a one-commit delay on a colour
-    // change is imperceptible.
     useEffect(() => {
         live.current = {
             headColor,
@@ -147,10 +138,6 @@ export default function DotCursor(props: Props) {
         };
         resize();
 
-        // Screen pixels in, frame-local pixels out, plus whether the pointer is
-        // over the frame at all. The pointer is tracked on the document rather
-        // than on the frame — the frame passes events through — so the rect
-        // does the hit test.
         const localize = (clientX: number, clientY: number) => {
             const rect = host.getBoundingClientRect();
             const sx = rect.width > 0 ? host.clientWidth / rect.width : 1;
@@ -166,9 +153,6 @@ export default function DotCursor(props: Props) {
             };
         };
 
-        // The native cursor is only replaced while the pointer is over this
-        // frame — hiding it document-wide would blank it over the whole page
-        // for a component that only owns its own section.
         const previousCursor = document.documentElement.style.cursor;
         let cursorHidden = false;
         const hideNativeCursor = (hide: boolean) => {
@@ -179,8 +163,6 @@ export default function DotCursor(props: Props) {
                 : previousCursor;
         };
 
-        // Nothing is positioned until the pointer is actually seen — the dot
-        // used to start at the centre of the screen and slide out from there.
         let ballX = 0;
         let ballY = 0;
         let targetX = 0;
@@ -196,22 +178,13 @@ export default function DotCursor(props: Props) {
         type Point = { x: number; y: number; age: number };
         let points: Point[] = [];
 
-        // elementFromPoint is the expensive call in this loop, so only re-hit
-        // test when the pointer actually moved.
         let hitDirty = true;
         let overHide = false;
         let overRing = false;
         let linkEl: Element | null = null;
 
-        // Seeded on first sight rather than at frame centre, so the dot enters
-        // from wherever the pointer does.
         let seeded = false;
-        // False while the pointer is outside the FRAME. The dot hides, but the
-        // trail is left to age out over its own lifetime rather than being
-        // wiped — cutting it dead was the old behaviour.
         let inside = false;
-        // The last viewport-space sample, kept alongside the local one because
-        // elementFromPoint and getBoundingClientRect both speak client pixels.
         let hitX = 0;
         let hitY = 0;
 
@@ -221,25 +194,16 @@ export default function DotCursor(props: Props) {
             targetY = y;
             ballX = x;
             ballY = y;
-            // Nothing is shown until the pointer is first seen OVER THE FRAME,
-            // so an untouched section has no cursor parked in it.
             canvas.style.opacity = "1";
-            // A stale trail would otherwise be joined to the entry point by one
-            // long chord across the frame.
             points = [];
         };
 
-        // Walk the trail out to the exit point so a flick across the edge ends
-        // at the border rather than wherever the last pointermove landed.
         const exitTo = (x: number, y: number) => {
             if (seeded && inside) {
                 const gapX = x - ballX;
                 const gapY = y - ballY;
                 const gap = Math.hypot(gapX, gapY);
                 if (gap > 1) {
-                    // Spaced like the per-frame samples, so the taper over the
-                    // final stretch matches the rest of the ribbon. Capped so a
-                    // corner-to-corner flick cannot flood the buffer.
                     const steps = Math.min(32, Math.ceil(gap / 8));
                     for (let i = 1; i <= steps; i++) {
                         const t = i / steps;
@@ -275,8 +239,6 @@ export default function DotCursor(props: Props) {
             hitDirty = true;
             hideNativeCursor(true);
         };
-        // Leaving the window entirely never produces a pointermove outside the
-        // frame, so the trail would be left hanging where it last was.
         const onWindowLeave = () => {
             if (inside) exitTo(targetX, targetY);
         };
@@ -301,16 +263,11 @@ export default function DotCursor(props: Props) {
 
             ctx.clearRect(0, 0, w, h);
 
-            // Before the pointer has ever been seen there is nothing to draw —
-            // no dot parked anywhere, no trail.
             if (!seeded) {
                 raf = requestAnimationFrame(frame);
                 return;
             }
 
-            // Exponential follow, same as Advanced Cursor — glued to the
-            // pointer at any speed, with no standing lag proportional to
-            // pointer velocity.
             const followEase = 1 - Math.exp(-dt / FOLLOW_TAU);
             ballX += (targetX - ballX) * followEase;
             ballY += (targetY - ballY) * followEase;
@@ -335,13 +292,7 @@ export default function DotCursor(props: Props) {
             // 1 → 40ms, 20 → 800ms of tail
             const trailMs = p.trailLength * 40;
 
-            // Trail — sampled at the dot, aged out by wall time, drawn as ONE
-            // tapered ribbon filled in a single pass so caps never composite
-            // twice and bead the line.
             if (!isLink) {
-                // Outside the window nothing new is laid down, but what is
-                // already there keeps ageing — so the tail fades over its own
-                // lifetime instead of blinking out the moment you leave.
                 if (inside) points.push({ x: ballX, y: ballY, age: 0 });
                 for (const pt of points) pt.age += dt * 1000;
                 points = points.filter((pt) => pt.age < trailMs);
@@ -352,15 +303,10 @@ export default function DotCursor(props: Props) {
                         0.5,
                         ((p.trailThickness / 20) * p.size) / 2
                     );
-                    // Offset each sample along its own normal; the width falls
-                    // to zero at the oldest point, so the tail comes to a tip.
                     const lx: number[] = [];
                     const ly: number[] = [];
                     const rx: number[] = [];
                     const ry: number[] = [];
-                    // Carried forward so a stationary run of samples (zero
-                    // direction) reuses the last good normal instead of
-                    // collapsing the ribbon.
                     let nx = 0;
                     let ny = 0;
                     for (let i = 0; i < n; i++) {
@@ -396,9 +342,6 @@ export default function DotCursor(props: Props) {
                 points = [];
             }
 
-            // Snap onto a trail{link} layer and measure its underline. The
-            // element's rect is in client pixels, so it is folded into the
-            // frame's own space before anything is drawn from it.
             let link: { left: number; width: number; bottom: number } | null =
                 null;
             if (linkEl) {
@@ -417,8 +360,6 @@ export default function DotCursor(props: Props) {
                 lineTargetWidth = 0;
             }
 
-            // State morphs. Exponential smoothing so the rate is frame-rate
-            // independent.
             const ease = 1 - Math.exp(-dt * (SNAPPINESS * 1.5));
             const targetRadius =
                 overRing || isLink ? (p.size * HOVER_SCALE) / 2 : p.size / 2;
@@ -429,8 +370,6 @@ export default function DotCursor(props: Props) {
             lineOpacity += ((isLink ? 1 : 0) - lineOpacity) * ease;
             lineWidth += (lineTargetWidth - lineWidth) * ease;
 
-            // The dot itself belongs to the pointer, so it goes when the
-            // pointer does — only the trail is left to finish fading.
             if (!inside) {
                 raf = requestAnimationFrame(frame);
                 return;
@@ -503,11 +442,7 @@ export default function DotCursor(props: Props) {
                 position: "relative",
                 width: "100%",
                 height: "100%",
-                // The effect belongs to this frame, so it is clipped to it —
-                // nothing spills over the rest of the page.
                 overflow: "hidden",
-                // A cursor effect must never swallow a click meant for whatever
-                // sits under it; the pointer is tracked on the document.
                 pointerEvents: "none",
                 ...style,
             }}

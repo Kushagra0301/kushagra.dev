@@ -4,14 +4,6 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import DotCursor from "./dot-cursor";
 
-/**
- * Mounts the dot cursor as a full-viewport overlay.
- *
- * Gated on a fine pointer (never on touch, where there is no cursor to
- * replace) and on the user not having asked for reduced motion. Both are
- * watched live so plugging in a mouse or flipping the OS setting takes
- * effect without a reload.
- */
 export function CursorLayer() {
   const [enabled, setEnabled] = useState(false);
   const { resolvedTheme } = useTheme();

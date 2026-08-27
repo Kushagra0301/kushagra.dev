@@ -3,12 +3,6 @@
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
-/**
- * Both icons are always rendered and swapped by CSS off the `.dark` class
- * that next-themes sets before first paint. That avoids the usual mounted
- * flag — there is no hydration mismatch to guard against, because the server
- * and client markup are identical.
- */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
 

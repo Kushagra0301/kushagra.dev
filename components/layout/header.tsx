@@ -116,8 +116,6 @@ export function Header() {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="border-b border-border bg-bg md:hidden"
           >
-            {/* Any click inside closes the sheet — otherwise tapping a link
-                leaves the overlay covering the page you just navigated to. */}
             <nav
               aria-label="Mobile"
               onClick={() => setMenuOpen(false)}

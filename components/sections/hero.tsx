@@ -28,8 +28,6 @@ const facts = [
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* Layered background: a faint grid, plus one warm bloom behind the
-          headline. Both decorative, both inert to assistive tech. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="grid-bg absolute inset-0 [mask-image:radial-gradient(ellipse_at_50%_0%,black,transparent_70%)]" />
         <div className="absolute -top-40 left-1/2 size-[42rem] -translate-x-1/2 rounded-full bg-accent/12 blur-[120px]" />
@@ -50,9 +48,7 @@ export function Hero() {
             </motion.div>
           )}
 
-          {/* motion.h1, not <h1> — variants only propagate through motion
-              components, so a plain heading would leave the <Line> spans
-              stuck in their hidden state forever. */}
+          {/* motion.h1: variants only propagate through motion components. */}
           <motion.h1
             variants={stagger(0.09)}
             className="max-w-[15ch] text-display-1 font-bold"
@@ -97,8 +93,6 @@ export function Hero() {
                 <dt className="font-display text-3xl font-bold tracking-tight">
                   {fact.value}
                 </dt>
-                {/* Balanced so a three-word label cannot drop a single
-                    orphaned word onto its own line. */}
                 <dd className="mt-1 text-balance text-sm leading-snug text-muted">
                   {fact.label}
                 </dd>

@@ -26,11 +26,6 @@ export function Badge({
   );
 }
 
-/**
- * Labels a project as client work, my own product, or a concept build.
- * Concepts are always visibly marked — they are never passed off as
- * commissioned work.
- */
 export function KindBadge({
   kind,
   className,

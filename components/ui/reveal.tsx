@@ -4,19 +4,6 @@ import { motion } from "framer-motion";
 import { fadeUp, fadeUpSubtle, stagger, viewport } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-/**
- * Scroll-reveal wrappers.
- *
- * Every one carries `data-reveal`, which the reduced-motion block in
- * globals.css uses to force the finished state.
- *
- * That override has to be CSS, not JS. Framer emits the `initial` variant as
- * inline styles during SSR, and the server cannot know the visitor's motion
- * preference — so any client-side branch leaves a stale `opacity: 0` on the
- * server-rendered element and the content stays invisible. A stylesheet rule
- * applies before first paint and does not care about hydration at all.
- */
-
 /** Scroll-triggered fade-up. The workhorse wrapper for section content. */
 export function Reveal({
   children,
@@ -71,10 +58,6 @@ export function RevealGroup({
   );
 }
 
-/**
- * A child of RevealGroup. Uses the subtler variant by design: grid items are
- * secondary to the heading that introduced them, and should move less.
- */
 export function RevealItem({
   children,
   className,

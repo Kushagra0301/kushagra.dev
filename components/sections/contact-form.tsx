@@ -57,8 +57,6 @@ function Field({
 }
 
 export function ContactForm() {
-  // Same store the pricing toggle writes to, so a visitor who switched to ₹
-  // on /services is offered rupee bands here without asking twice.
   const region = useSyncExternalStore(
     subscribeRegion,
     getRegionSnapshot,
@@ -77,8 +75,6 @@ export function ContactForm() {
     const form = event.currentTarget;
     const payload = Object.fromEntries(new FormData(form).entries());
 
-    // Validate with the same schema the route uses, so the messages a user
-    // sees locally are the messages the server would have sent back.
     const parsed = contactSchema.safeParse(payload);
     if (!parsed.success) {
       setErrors(parsed.error.flatten().fieldErrors as FieldErrors);
@@ -218,9 +214,7 @@ export function ContactForm() {
             </Field>
 
             <Field label="Budget" htmlFor="budget" error={errors.budget?.[0]}>
-              {/* Keyed on region: the server snapshot renders the $ ladder, so
-                  when the client resolves to ₹ the <select> must remount for
-                  its defaultValue to point at the new option list. */}
+              {/* Keyed on region so defaultValue follows the option list. */}
               <select
                 key={region}
                 id="budget"
@@ -259,7 +253,6 @@ export function ContactForm() {
               />
             </Field>
 
-            {/* Honeypot — hidden from people, offered to bots. */}
             <div aria-hidden className="hidden">
               <label htmlFor="website">Website</label>
               <input

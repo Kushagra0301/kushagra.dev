@@ -5,10 +5,6 @@ import type { Project } from "@/content/projects";
 import { KindBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-/**
- * A project with a written case study links inward to that page; a concept
- * build has nothing more to say here, so it links straight to the live site.
- */
 function destination(project: Project) {
   return project.caseStudy
     ? { href: `/work/${project.slug}`, external: false }

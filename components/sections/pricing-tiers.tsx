@@ -26,8 +26,6 @@ export function PricingTiers() {
   return (
     <>
       <Reveal className="mb-10">
-        {/* Same sliding-pill pattern as the work filter, so the two segmented
-            controls on the site behave identically. */}
         <div
           role="group"
           aria-label="Choose pricing region"
@@ -46,9 +44,7 @@ export function PricingTiers() {
                   isActive ? "text-accent-fg" : "text-muted hover:text-fg"
                 )}
               >
-                {/* No negative z-index here: this control sits on its own
-                    opaque bg-surface track, which would paint straight over a
-                    pill sent behind it. The label is lifted instead. */}
+                {/* No -z-10: the opaque track would paint over the pill. */}
                 {isActive && (
                   <motion.span
                     layoutId="region-pill"

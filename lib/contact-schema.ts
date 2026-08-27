@@ -1,12 +1,6 @@
 import { z } from "zod";
 import type { Region } from "@/content/services";
 
-/**
- * Budget bands, split by market for the same reason the pricing tiers are:
- * "Under $500" is a meaningless question to an Indian SMB, and a converted
- * rupee figure would just be an odd-looking dollar amount. Each ladder is
- * anchored to that region's own tier prices in content/services.ts.
- */
 export const budgetsByRegion: Record<Region, readonly string[]> = {
   IN: [
     "Under ₹15,000",
@@ -24,10 +18,6 @@ export const budgetsByRegion: Record<Region, readonly string[]> = {
   ],
 };
 
-/**
- * The server cannot know which ladder the browser rendered, so validation
- * accepts every value from both.
- */
 export const budgets = [
   ...new Set([...budgetsByRegion.IN, ...budgetsByRegion.INTL]),
 ] as [string, ...string[]];
@@ -51,14 +41,6 @@ export const contactSchema = z.object({
     .trim()
     .min(20, "A couple of sentences helps me give you a useful answer.")
     .max(4000),
-  /**
-   * Honeypot. Hidden from humans, irresistible to naive bots.
-   *
-   * Deliberately permissive: rejecting a filled value here would return a
-   * validation error naming this field and its rule, which tells a bot
-   * exactly what to leave alone next time. Instead any value parses, and the
-   * route quietly returns success without sending anything.
-   */
   website: z.string().max(200).optional(),
 });
 

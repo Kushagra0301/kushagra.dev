@@ -2,10 +2,6 @@ import { testimonials } from "@/content/site";
 import { Section } from "@/components/ui/section";
 import { RevealGroup, RevealItem } from "@/components/ui/reveal";
 
-/**
- * Renders nothing until real quotes exist in content/site.ts. An empty
- * testimonials wall is better than an invented one.
- */
 export function Testimonials() {
   if (testimonials.length === 0) return null;
 

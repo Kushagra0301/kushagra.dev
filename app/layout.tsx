@@ -7,7 +7,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { site } from "@/content/site";
-import { personJsonLd } from "@/lib/seo";
+import { personJsonLdScript } from "@/lib/seo";
 import { Providers } from "./providers";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -82,7 +82,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd()) }}
+          dangerouslySetInnerHTML={{ __html: personJsonLdScript() }}
         />
         <Providers>
           <a

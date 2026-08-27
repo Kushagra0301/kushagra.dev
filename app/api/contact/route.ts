@@ -3,19 +3,30 @@ import { Resend } from "resend";
 import { contactSchema } from "@/lib/contact-schema";
 import { site } from "@/content/site";
 
-/**
- * Rate limit: a fixed window per IP, held in module memory.
- *
- * This is deliberately not a Redis-backed limiter. On a single-region
- * deployment it stops the obvious abuse; anything more determined is a
- * problem for a real queue, and a portfolio contact form is not that.
- */
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
+const MAX_TRACKED_IPS = 10_000;
 const hits = new Map<string, { count: number; resetAt: number }>();
+
+// Without this the map grows one entry per unique IP forever, so a spray of
+// spoofed X-Forwarded-For values becomes a memory-exhaustion vector.
+function prune(now: number) {
+  for (const [ip, entry] of hits) {
+    if (now > entry.resetAt) hits.delete(ip);
+  }
+  if (hits.size > MAX_TRACKED_IPS) {
+    const excess = hits.size - MAX_TRACKED_IPS;
+    let i = 0;
+    for (const ip of hits.keys()) {
+      if (i++ >= excess) break;
+      hits.delete(ip);
+    }
+  }
+}
 
 function rateLimited(ip: string) {
   const now = Date.now();
+  prune(now);
   const entry = hits.get(ip);
 
   if (!entry || now > entry.resetAt) {
@@ -25,6 +36,11 @@ function rateLimited(ip: string) {
 
   entry.count += 1;
   return entry.count > MAX_PER_WINDOW;
+}
+
+// Strips CR/LF and other control characters before they reach a mail subject.
+function singleLine(value: string) {
+  return value.replace(/[\p{Cc}\p{Cf}]/gu, " ").trim().slice(0, 120);
 }
 
 function clientIp(request: Request) {
@@ -91,7 +107,7 @@ export async function POST(request: Request) {
       to,
       // Replying in the inbox goes straight back to the sender.
       replyTo: data.email,
-      subject: `New enquiry — ${data.name} · ${data.projectType}`,
+      subject: `New enquiry — ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
       html: `
         <h2>New project enquiry</h2>
         <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>

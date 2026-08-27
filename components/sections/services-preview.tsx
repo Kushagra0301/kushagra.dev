@@ -4,10 +4,6 @@ import { Section } from "@/components/ui/section";
 import { RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 
-/**
- * Spelled out rather than hardcoded in the headline — the copy said "Five"
- * while the list held six the moment a service was added.
- */
 const COUNT_WORDS = [
   "No",
   "One",
@@ -43,9 +39,6 @@ export function ServicesPreview() {
               </h3>
               <div>
                 <p className="leading-relaxed text-muted">{service.blurb}</p>
-                {/* Separated by an explicit dot: several deliverables contain
-                    slashes and commas of their own, so whitespace alone left
-                    the items visually running together. */}
                 <ul className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                   {service.deliverables.map((d, di) => (
                     <li

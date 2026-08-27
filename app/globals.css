@@ -2,15 +2,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/**
- * Light: warm sand paper with a deep forest teal.
- * Dark:  cool near-black teal with a bright aqua signal.
- *
- * The two modes are separate palettes, not inversions of each other — the
- * light ground is warm, the dark ground is cool. Every foreground/background
- * pairing below clears WCAG AA (4.5:1); the tightest is accent-on-accent-soft
- * in light mode at 4.69:1.
- */
 :root {
   --bg: #fbfaf7;
   --surface: #ffffff;
@@ -22,9 +13,6 @@
   /* White clears AA on the forest teal at 5.47:1. */
   --accent-fg: #ffffff;
   --accent-soft: #dcf2ee;
-  /* Accent used as TEXT. The teal passes AA at body size unaided (5.24:1 on
-     bg), so this no longer diverges from --accent the way the old orange
-     forced it to. Kept as a seam for the next palette change. */
   --accent-ink: var(--accent);
 
   --shadow-card: 0 1px 2px rgb(16 28 27 / 0.04), 0 8px 24px -12px rgb(16 28 27 / 0.12);
@@ -65,15 +53,6 @@
   --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 
-  /**
-   * Type scale. One fluid modular system, replacing the four ad-hoc clamp()
-   * values that were scattered across the page components.
-   *
-   * Each step carries its own line-height and tracking, because they are not
-   * independent of size: display type needs to be set tight and negative,
-   * body type needs air. Baking them into the token means a heading can never
-   * be given the wrong leading by accident.
-   */
   --text-display-1: clamp(2.75rem, 8vw, 6.5rem);
   --text-display-1--line-height: 0.9;
   --text-display-1--letter-spacing: -0.045em;
@@ -94,13 +73,6 @@
   --text-lead--line-height: 1.6;
   --text-lead--letter-spacing: -0.005em;
 
-  /**
-   * Motion. Three tiers, not one duration reused everywhere:
-   *   micro  — colour and opacity on hover/focus, must feel instant
-   *   ui     — transforms on interactive elements, must feel responsive
-   *   reveal — scroll entrances, the only tier allowed to be slow
-   * Entrances decelerate (ease-out); exits accelerate and run shorter.
-   */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-quint: cubic-bezier(0.64, 0, 0.78, 0);
@@ -198,18 +170,6 @@
     transition-duration: 0.001ms !important;
   }
 
-  /**
-   * Force every scroll-reveal to its finished state.
-   *
-   * Framer renders the `initial` variant as inline styles during SSR, and the
-   * server has no way to know this preference — so without this rule the
-   * content ships with opacity:0 baked in and only becomes visible once an
-   * intersection observer fires. Someone who asked the OS to stop animations
-   * would be reading blank sections until they scrolled past them, and would
-   * see nothing at all if the observer never ran.
-   *
-   * !important is required here: it is overriding an inline style.
-   */
   [data-reveal] {
     opacity: 1 !important;
     transform: none !important;

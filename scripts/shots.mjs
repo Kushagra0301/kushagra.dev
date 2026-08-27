@@ -1,13 +1,3 @@
-/**
- * Captures a hero screenshot of every project's live site into public/shots/.
- *
- * Drives the locally installed Chrome via puppeteer-core, so there is no
- * 150MB browser download in devDependencies.
- *
- *   node scripts/shots.mjs            # only missing shots
- *   node scripts/shots.mjs --force    # re-capture everything
- *   node scripts/shots.mjs swasthx    # re-capture one slug
- */
 
 import { existsSync, mkdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -38,11 +28,6 @@ function findChrome() {
   return hit;
 }
 
-/**
- * Reads slug + liveUrl straight out of content/projects.ts. Parsing the
- * source with a regex avoids needing a TS loader just for a build script,
- * and the two fields always sit adjacent in every entry.
- */
 async function loadProjects() {
   const source = await readFile(
     path.join(root, "content", "projects.ts"),
@@ -94,9 +79,6 @@ for (const project of queue) {
       timeout: 60_000,
     });
 
-    // Most of these sites reveal content on scroll, so a shot taken on
-    // arrival catches elements still at opacity 0. Walking down the page
-    // and back to the top fires those observers first.
     await page.evaluate(async () => {
       const step = window.innerHeight / 2;
       for (let y = 0; y < document.body.scrollHeight; y += step) {

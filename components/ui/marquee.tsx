@@ -1,14 +1,5 @@
 import { cn } from "@/lib/utils";
 
-/**
- * Infinite horizontal ticker.
- *
- * The list is rendered as two identical halves inside one animated track that
- * translates by exactly -50%. Because both halves measure the same — trailing
- * padding included — the loop point is seamless at any content width. Pure
- * CSS, so the global prefers-reduced-motion rule in globals.css freezes it
- * with no JS involved.
- */
 export function Marquee({
   items,
   className,

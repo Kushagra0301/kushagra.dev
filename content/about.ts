@@ -46,10 +46,6 @@ export const toolkit = [
   },
 ];
 
-/**
- * TODO: add real entries — role/company/dates — and the timeline section
- * starts rendering. Left empty rather than filled with invented history.
- */
 export type TimelineEntry = {
   period: string;
   title: string;

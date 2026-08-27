@@ -4,11 +4,6 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md" | "lg";
 
-/**
- * Colour moves on the micro tier (150ms) so hover reads as instant; the lift
- * and the press move with it rather than on a separate slow track. The old
- * 300ms on every property made even a colour change feel laggy.
- */
 const base =
   "group relative inline-flex select-none items-center justify-center gap-2 rounded-full " +
   "whitespace-nowrap font-medium " +

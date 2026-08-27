@@ -3,21 +3,6 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * Rising particles — soft motes that climb and drift sideways as they go.
- *
- * The prop surface deliberately mirrors React Bits Pro's `rising-particles-tw`
- * (speed / count / minSize / maxSize / sway / swayRate / depth / glow / color /
- * farColor / opacity / cursorInteraction / cursorPush / cursorRadius / paused),
- * so swapping the licensed component in later is an import change and nothing
- * else. Sizes are fractions of the canvas height, matching that API.
- *
- * Each mote is drawn from a glow sprite baked once into an offscreen canvas,
- * rather than building a radial gradient per particle per frame — that is the
- * difference between this being free and it costing a third of the frame
- * budget at 100 particles.
- */
-
 export type RisingParticlesProps = {
   speed?: number;
   count?: number;
@@ -88,9 +73,6 @@ function makeSprite(rgb: [number, number, number], coreSize: number, glow: numbe
   const [r, g, b] = rgb;
   const core = Math.max(0.01, Math.min(0.9, coreSize));
 
-  // Four stops, not two: a bright pinpoint, a fast drop to a thin halo, then
-  // a long tail to nothing. A plain two-stop gradient produces a fat even
-  // disc that reads as a smudge rather than a glowing mote.
   const a = Math.min(1, glow);
   gradient.addColorStop(0, `rgba(${r},${g},${b},${a})`);
   gradient.addColorStop(core * 0.5, `rgba(${r},${g},${b},${a * 0.45})`);
@@ -125,8 +107,6 @@ export function RisingParticles({
 }: RisingParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Read inside the loop so a prop change never tears the field down and
-  // restarts every mote from the bottom of the screen.
   const live = useRef({
     speed,
     count,
@@ -178,8 +158,6 @@ export function RisingParticles({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // A reduced-motion request means no drifting field at all. Checked here
-    // rather than in the parent so the component is safe wherever it lands.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let width = 1;
@@ -216,8 +194,6 @@ export function RisingParticles({
       const z = Math.random();
       return {
         x: Math.random(),
-        // On first fill the field is already in the air; afterwards new motes
-        // enter from just below the lower edge.
         y: seeded ? Math.random() : 1 + Math.random() * 0.2,
         z,
         size: p.minSize + (p.maxSize - p.minSize) * Math.random(),
@@ -280,8 +256,6 @@ export function RisingParticles({
       ctx.globalCompositeOperation = p.blend;
 
       for (const mote of motes) {
-        // Nearer motes (high z) rise faster and read larger — that parallax
-        // is the entire illusion of depth here.
         const near = 1 - p.depth + p.depth * mote.z;
         mote.y -= mote.rise * p.speed * near * dt;
         mote.phase += p.swayRate * dt;
@@ -299,8 +273,6 @@ export function RisingParticles({
           const dy = y - pointerY;
           const dist = Math.hypot(dx, dy);
           if (dist < p.cursorRadius && dist > 0.0001) {
-            // Falls off smoothly to zero at the edge of the radius, so motes
-            // do not snap as the pointer sweeps past.
             const force = (1 - dist / p.cursorRadius) ** 2 * p.cursorPush;
             mote.offsetX += (dx / dist) * force * dt * 6;
             mote.offsetY += (dy / dist) * force * dt * 6;

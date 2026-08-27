@@ -16,7 +16,6 @@ export const metadata = buildMetadata({
 });
 
 export default function AboutPage() {
-
   return (
     <>
       <PageHeader

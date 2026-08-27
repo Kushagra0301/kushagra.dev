@@ -30,6 +30,17 @@ export function buildMetadata({
   };
 }
 
+/**
+ * Serialised for dangerouslySetInnerHTML. JSON.stringify does not escape `<`,
+ * so a value containing `</script>` would close the tag and inject markup.
+ */
+export function personJsonLdScript() {
+  return JSON.stringify(personJsonLd())
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
 /** JSON-LD Person graph, injected once from the root layout. */
 export function personJsonLd() {
   const sameAs = Object.values(site.socials).filter(Boolean);
