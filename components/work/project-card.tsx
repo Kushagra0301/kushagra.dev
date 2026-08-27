@@ -5,6 +5,13 @@ import type { Project } from "@/content/projects";
 import { KindBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+/**
+ * Must match the capture viewport in scripts/shots.mjs (1440x900). The cards
+ * previously used 16/11 and 4/3, so object-cover trimmed roughly 9% and 17%
+ * off the sides of every screenshot and cut the sites off mid-layout.
+ */
+const SHOT_ASPECT = "aspect-[16/10]";
+
 function destination(project: Project) {
   return project.caseStudy
     ? { href: `/work/${project.slug}`, external: false }
@@ -29,7 +36,7 @@ export function ProjectCard({
     <div
       className={cn(
         "relative overflow-hidden rounded-media border border-border bg-surface-2 transition-colors duration-150 group-hover:border-accent/40",
-        large ? "aspect-[16/11]" : "aspect-[4/3]"
+        SHOT_ASPECT
       )}
     >
       <Image

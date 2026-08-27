@@ -71,6 +71,8 @@ let failed = 0;
 
 for (const project of queue) {
   const page = await browser.newPage();
+  // 16:10. SHOT_ASPECT in components/work/project-card.tsx must match this,
+  // or object-cover crops the sides off every thumbnail.
   await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 2 });
 
   try {
