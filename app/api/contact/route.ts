@@ -1,0 +1,123 @@
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+import { contactSchema } from "@/lib/contact-schema";
+import { site } from "@/content/site";
+
+/**
+ * Rate limit: a fixed window per IP, held in module memory.
+ *
+ * This is deliberately not a Redis-backed limiter. On a single-region
+ * deployment it stops the obvious abuse; anything more determined is a
+ * problem for a real queue, and a portfolio contact form is not that.
+ */
+const WINDOW_MS = 60 * 60 * 1000;
+const MAX_PER_WINDOW = 5;
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimited(ip: string) {
+  const now = Date.now();
+  const entry = hits.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    hits.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+
+  entry.count += 1;
+  return entry.count > MAX_PER_WINDOW;
+}
+
+function clientIp(request: Request) {
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() || "unknown";
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export async function POST(request: Request) {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Malformed request." }, { status: 400 });
+  }
+
+  const parsed = contactSchema.safeParse(body);
+  if (!parsed.success) {
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    return NextResponse.json({ error: "Validation failed.", fieldErrors }, { status: 400 });
+  }
+
+  const data = parsed.data;
+
+  // Honeypot tripped — respond exactly as if it worked, and send nothing.
+  if (data.website) {
+    return NextResponse.json({ ok: true });
+  }
+
+  if (rateLimited(clientIp(request))) {
+    return NextResponse.json(
+      {
+        error: `That is a lot of messages. Try again later, or email me directly at ${site.email}.`,
+      },
+      { status: 429 }
+    );
+  }
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("[contact] RESEND_API_KEY is not set — message not delivered.");
+    return NextResponse.json(
+      {
+        error: `The form is not wired up yet. Please email me directly at ${site.email}.`,
+      },
+      { status: 503 }
+    );
+  }
+
+  const from = process.env.CONTACT_FROM_EMAIL ?? "Portfolio <onboarding@resend.dev>";
+  const to = process.env.CONTACT_TO_EMAIL ?? site.email;
+
+  try {
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from,
+      to,
+      // Replying in the inbox goes straight back to the sender.
+      replyTo: data.email,
+      subject: `New enquiry — ${data.name} · ${data.projectType}`,
+      html: `
+        <h2>New project enquiry</h2>
+        <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+        ${data.company ? `<p><strong>Company:</strong> ${escapeHtml(data.company)}</p>` : ""}
+        <p><strong>Project type:</strong> ${escapeHtml(data.projectType)}</p>
+        <p><strong>Budget:</strong> ${escapeHtml(data.budget)}</p>
+        <hr />
+        <p>${escapeHtml(data.message).replace(/\n/g, "<br />")}</p>
+      `,
+    });
+
+    if (error) {
+      console.error("[contact] Resend rejected the send:", error);
+      return NextResponse.json(
+        { error: `Sending failed. Please email me directly at ${site.email}.` },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[contact] Unexpected failure:", err);
+    return NextResponse.json(
+      { error: `Something went wrong. Please email me directly at ${site.email}.` },
+      { status: 500 }
+    );
+  }
+}

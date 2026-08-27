@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/**
+ * Light: warm sand paper with a deep forest teal.
+ * Dark:  cool near-black teal with a bright aqua signal.
+ *
+ * The two modes are separate palettes, not inversions of each other — the
+ * light ground is warm, the dark ground is cool. Every foreground/background
+ * pairing below clears WCAG AA (4.5:1); the tightest is accent-on-accent-soft
+ * in light mode at 4.69:1.
+ */
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --surface-2: #f1efe9;
+  --border: #e2dfd6;
+  --fg: #101c1b;
+  --muted: #55635f;
+  --accent: #0f766e;
+  /* White clears AA on the forest teal at 5.47:1. */
+  --accent-fg: #ffffff;
+  --accent-soft: #dcf2ee;
+  /* Accent used as TEXT. The teal passes AA at body size unaided (5.24:1 on
+     bg), so this no longer diverges from --accent the way the old orange
+     forced it to. Kept as a seam for the next palette change. */
+  --accent-ink: var(--accent);
+
+  --shadow-card: 0 1px 2px rgb(16 28 27 / 0.04), 0 8px 24px -12px rgb(16 28 27 / 0.12);
+  --grid-line: rgb(16 28 27 / 0.05);
+}
+
+.dark {
+  --bg: #071110;
+  --surface: #0e1b1a;
+  --surface-2: #142423;
+  --border: #1e3230;
+  --fg: #e6f0ee;
+  --muted: #8a9e9b;
+  --accent: #2dd4bf;
+  /* Dark ink on the bright aqua: 10.29:1. */
+  --accent-fg: #071110;
+  --accent-soft: #0c2a26;
+  --accent-ink: var(--accent);
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --grid-line: rgb(230 240 238 / 0.06);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /**
+   * Type scale. One fluid modular system, replacing the four ad-hoc clamp()
+   * values that were scattered across the page components.
+   *
+   * Each step carries its own line-height and tracking, because they are not
+   * independent of size: display type needs to be set tight and negative,
+   * body type needs air. Baking them into the token means a heading can never
+   * be given the wrong leading by accident.
+   */
+  --text-display-1: clamp(2.75rem, 8vw, 6.5rem);
+  --text-display-1--line-height: 0.9;
+  --text-display-1--letter-spacing: -0.045em;
+
+  --text-display-2: clamp(2.25rem, 5.5vw, 4.25rem);
+  --text-display-2--line-height: 0.95;
+  --text-display-2--letter-spacing: -0.038em;
+
+  --text-display-3: clamp(1.75rem, 3.4vw, 2.75rem);
+  --text-display-3--line-height: 1.05;
+  --text-display-3--letter-spacing: -0.03em;
+
+  --text-title: clamp(1.25rem, 1.8vw, 1.5rem);
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.02em;
+
+  --text-lead: clamp(1.0625rem, 1.4vw, 1.25rem);
+  --text-lead--line-height: 1.6;
+  --text-lead--letter-spacing: -0.005em;
+
+  /**
+   * Motion. Three tiers, not one duration reused everywhere:
+   *   micro  — colour and opacity on hover/focus, must feel instant
+   *   ui     — transforms on interactive elements, must feel responsive
+   *   reveal — scroll entrances, the only tier allowed to be slow
+   * Entrances decelerate (ease-out); exits accelerate and run shorter.
+   */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-quint: cubic-bezier(0.64, 0, 0.78, 0);
+
+  --radius-card: 1.25rem;
+  --radius-media: 1rem;
+}
+
+:root {
+  /* Prose measure: ~68 characters, inside the 65–75ch readability band. */
+  --measure: 68ch;
+
+  /* One z-index scale, so stacking is decided here and not per-component. */
+  --z-header: 50;
+  --z-menu: 60;
+  --z-cursor: 90;
+  --z-skip: 100;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .wrap { padding-inline: 2rem; }
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  /**
+   * Force every scroll-reveal to its finished state.
+   *
+   * Framer renders the `initial` variant as inline styles during SSR, and the
+   * server has no way to know this preference — so without this rule the
+   * content ships with opacity:0 baked in and only becomes visible once an
+   * intersection observer fires. Someone who asked the OS to stop animations
+   * would be reading blank sections until they scrolled past them, and would
+   * see nothing at all if the observer never ran.
+   *
+   * !important is required here: it is overriding an inline style.
+   */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
