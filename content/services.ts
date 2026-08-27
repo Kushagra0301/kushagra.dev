@@ -79,16 +79,20 @@ export type Region = "IN" | "INTL";
 
 export const regions: Record<
   Region,
-  { label: string; symbol: string; note: string }
+  { label: string; symbol: string; audience: string; switchTo: string; note: string }
 > = {
   IN: {
     label: "India",
     symbol: "₹",
+    audience: "India",
+    switchTo: "Indian pricing",
     note: "Prices are in INR and exclude GST and third-party costs such as domains, hosting or stock imagery. Payment by UPI or bank transfer.",
   },
   INTL: {
     label: "International",
     symbol: "$",
+    audience: "international clients",
+    switchTo: "international pricing",
     note: "Prices are in USD and exclude third-party costs such as domains, hosting or stock imagery. Happy to work through Upwork escrow or directly, whichever you prefer.",
   },
 };

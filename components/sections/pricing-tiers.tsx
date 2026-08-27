@@ -1,7 +1,6 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { tiers, regions, type Region } from "@/content/services";
 import {
@@ -14,56 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
 
-const order: Region[] = ["IN", "INTL"];
-
 export function PricingTiers() {
   const region = useSyncExternalStore(
     subscribeRegion,
     getRegionSnapshot,
     getServerRegionSnapshot
   );
+  const other: Region = region === "IN" ? "INTL" : "IN";
 
   return (
     <>
-      <Reveal className="mb-10">
-        <div
-          role="group"
-          aria-label="Choose pricing region"
-          className="inline-flex rounded-full border border-border bg-surface p-1"
-        >
-          {order.map((id) => {
-            const isActive = region === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => setRegion(id)}
-                className={cn(
-                  "relative inline-flex min-h-11 items-center rounded-full px-5 text-sm transition-colors duration-150",
-                  isActive ? "text-accent-fg" : "text-muted hover:text-fg"
-                )}
-              >
-                {/* No -z-10: the opaque track would paint over the pill. */}
-                {isActive && (
-                  <motion.span
-                    layoutId="region-pill"
-                    className="absolute inset-0 rounded-full bg-accent"
-                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  />
-                )}
-                <span className="relative flex items-center gap-1.5">
-                  <span aria-hidden className="font-mono">
-                    {regions[id].symbol}
-                  </span>
-                  {regions[id].label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Reveal>
-
       <RevealGroup className="grid gap-6 lg:grid-cols-3">
         {tiers.map((tier) => (
           <RevealItem key={tier.name}>
@@ -115,6 +74,21 @@ export function PricingTiers() {
 
       <Reveal className="mt-8">
         <p className="max-w-2xl text-sm text-muted">{regions[region].note}</p>
+        {/* Detection is a guess: an NRI on a US machine, or someone travelling
+            with auto-timezone on, lands on the wrong ladder. This is the way
+            back, and it keeps the two-ladder policy disclosed rather than
+            silent. Deliberately quiet so it does not read as an invitation to
+            compare the two. */}
+        <p className="mt-2 text-sm text-muted">
+          Showing {regions[region].symbol} prices for {regions[region].audience}.{" "}
+          <button
+            type="button"
+            onClick={() => setRegion(other)}
+            className="underline underline-offset-4 transition-colors duration-150 hover:text-accent-ink"
+          >
+            View {regions[other].switchTo}
+          </button>
+        </p>
       </Reveal>
 
       <p aria-live="polite" className="sr-only">
