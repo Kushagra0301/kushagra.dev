@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { contactSchema } from "@/lib/contact-schema";
+import { contactSchema, type ContactInput } from "@/lib/contact-schema";
 import { site } from "@/content/site";
 
 const WINDOW_MS = 60 * 60 * 1000;
@@ -41,6 +41,98 @@ function rateLimited(ip: string) {
 // Strips CR/LF and other control characters before they reach a mail subject.
 function singleLine(value: string) {
   return value.replace(/[\p{Cc}\p{Cf}]/gu, " ").trim().slice(0, 120);
+}
+
+type Delivery = { status: "sent" | "failed" | "unconfigured" };
+
+/**
+ * Web3Forms first, Resend as an alternative. Both run server-side, so the
+ * access key never reaches the browser — Web3Forms' own example puts it in a
+ * hidden input, which works but publishes the key to anyone viewing source.
+ */
+async function deliver(data: ContactInput): Promise<Delivery> {
+  const web3formsKey = process.env.WEB3FORMS_ACCESS_KEY?.trim();
+  if (web3formsKey) return sendViaWeb3Forms(web3formsKey, data);
+
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  if (resendKey) return sendViaResend(resendKey, data);
+
+  return { status: "unconfigured" };
+}
+
+async function sendViaWeb3Forms(
+  accessKey: string,
+  data: ContactInput
+): Promise<Delivery> {
+  try {
+    const res = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        access_key: accessKey,
+        subject: `New enquiry — ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
+        from_name: singleLine(data.name),
+        // Web3Forms sets Reply-To from this, so replying reaches the sender.
+        email: data.email,
+        name: data.name,
+        company: data.company || "—",
+        project_type: data.projectType,
+        budget: data.budget,
+        message: data.message,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    const json = (await res.json().catch(() => null)) as
+      | { success?: boolean; message?: string }
+      | null;
+
+    if (!res.ok || !json?.success) {
+      console.error("[contact] Web3Forms rejected the send:", res.status, json?.message);
+      return { status: "failed" };
+    }
+    return { status: "sent" };
+  } catch (err) {
+    console.error("[contact] Web3Forms request failed:", err);
+    return { status: "failed" };
+  }
+}
+
+async function sendViaResend(
+  apiKey: string,
+  data: ContactInput
+): Promise<Delivery> {
+  const from = process.env.CONTACT_FROM_EMAIL ?? "Portfolio <onboarding@resend.dev>";
+  const to = process.env.CONTACT_TO_EMAIL ?? site.email;
+
+  try {
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from,
+      to,
+      replyTo: data.email,
+      subject: `New enquiry — ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
+      html: `
+        <h2>New project enquiry</h2>
+        <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+        ${data.company ? `<p><strong>Company:</strong> ${escapeHtml(data.company)}</p>` : ""}
+        <p><strong>Project type:</strong> ${escapeHtml(data.projectType)}</p>
+        <p><strong>Budget:</strong> ${escapeHtml(data.budget)}</p>
+        <hr />
+        <p>${escapeHtml(data.message).replace(/\n/g, "<br />")}</p>
+      `,
+    });
+
+    if (error) {
+      console.error("[contact] Resend rejected the send:", error);
+      return { status: "failed" };
+    }
+    return { status: "sent" };
+  } catch (err) {
+    console.error("[contact] Resend request failed:", err);
+    return { status: "failed" };
+  }
 }
 
 function clientIp(request: Request) {
@@ -86,9 +178,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.error("[contact] RESEND_API_KEY is not set — message not delivered.");
+  const delivery = await deliver(data);
+
+  if (delivery.status === "unconfigured") {
+    console.error("[contact] No delivery provider configured — message not sent.");
     return NextResponse.json(
       {
         error: `The form is not wired up yet. Please email me directly at ${site.email}.`,
@@ -97,43 +190,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const from = process.env.CONTACT_FROM_EMAIL ?? "Portfolio <onboarding@resend.dev>";
-  const to = process.env.CONTACT_TO_EMAIL ?? site.email;
-
-  try {
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from,
-      to,
-      // Replying in the inbox goes straight back to the sender.
-      replyTo: data.email,
-      subject: `New enquiry — ${singleLine(data.name)} · ${singleLine(data.projectType)}`,
-      html: `
-        <h2>New project enquiry</h2>
-        <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
-        <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
-        ${data.company ? `<p><strong>Company:</strong> ${escapeHtml(data.company)}</p>` : ""}
-        <p><strong>Project type:</strong> ${escapeHtml(data.projectType)}</p>
-        <p><strong>Budget:</strong> ${escapeHtml(data.budget)}</p>
-        <hr />
-        <p>${escapeHtml(data.message).replace(/\n/g, "<br />")}</p>
-      `,
-    });
-
-    if (error) {
-      console.error("[contact] Resend rejected the send:", error);
-      return NextResponse.json(
-        { error: `Sending failed. Please email me directly at ${site.email}.` },
-        { status: 502 }
-      );
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("[contact] Unexpected failure:", err);
+  if (delivery.status === "failed") {
     return NextResponse.json(
-      { error: `Something went wrong. Please email me directly at ${site.email}.` },
-      { status: 500 }
+      { error: `Sending failed. Please email me directly at ${site.email}.` },
+      { status: 502 }
     );
   }
+
+  return NextResponse.json({ ok: true });
 }
