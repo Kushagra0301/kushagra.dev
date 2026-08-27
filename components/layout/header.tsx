@@ -22,11 +22,24 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // The sheet is a full-screen overlay, so the page behind it must not scroll.
+  // Freezing scroll is not enough on its own: the sheet is a dropdown, so the
+  // page underneath stayed clickable and tabbable behind it. `inert` takes the
+  // whole document out of the pointer and focus order while the menu is open.
   useEffect(() => {
+    const behind = [
+      document.getElementById("main"),
+      document.querySelector("footer"),
+    ].filter(Boolean) as HTMLElement[];
+
     document.body.style.overflow = menuOpen ? "hidden" : "";
+    for (const el of behind) {
+      if (menuOpen) el.setAttribute("inert", "");
+      else el.removeAttribute("inert");
+    }
+
     return () => {
       document.body.style.overflow = "";
+      for (const el of behind) el.removeAttribute("inert");
     };
   }, [menuOpen]);
 
@@ -106,15 +119,32 @@ export function Header() {
         </div>
       </div>
 
+      {/* Starts below the header bar so the close button stays reachable. */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
+            key="backdrop"
+            aria-hidden
+            onClick={() => setMenuOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 bottom-0 top-18 bg-bg/70 backdrop-blur-sm md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="panel"
             id="mobile-menu"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="border-b border-border bg-bg md:hidden"
+            className="relative border-b border-border bg-bg md:hidden"
           >
             <nav
               aria-label="Mobile"

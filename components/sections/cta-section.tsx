@@ -1,7 +1,7 @@
-import { site } from "@/content/site";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Marquee } from "@/components/ui/marquee";
+import { EmailAction } from "@/components/ui/email-action";
 import { ParticleField } from "@/components/ui/particle-field";
 
 const keywords = [
@@ -44,9 +44,7 @@ export function CTASection() {
               <Button href="/contact" size="lg">
                 Start a project
               </Button>
-              <Button href={`mailto:${site.email}`} size="lg" variant="secondary">
-                {site.email}
-              </Button>
+              <EmailAction variant="button" />
             </div>
           </Reveal>
         </div>

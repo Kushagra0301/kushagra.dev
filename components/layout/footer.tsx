@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { nav, site } from "@/content/site";
+import { EmailAction } from "@/components/ui/email-action";
 
 const socialLabels: Record<string, string> = {
   upwork: "Upwork",
@@ -50,13 +51,7 @@ export function Footer() {
             <p className="eyebrow mb-4">Elsewhere</p>
             <ul className="space-y-2.5">
               <li>
-                <a
-                  href={`mailto:${site.email}`}
-                  className="inline-flex items-center gap-1 text-muted transition-colors hover:text-accent-ink"
-                >
-                  Email
-                  <ArrowUpRight aria-hidden className="size-3.5" />
-                </a>
+                <EmailAction label="Email" compact />
               </li>
               <li>
                 <a

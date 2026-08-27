@@ -1,6 +1,7 @@
 import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import { site } from "@/content/site";
 import { PageHeader } from "@/components/layout/page-header";
+import { EmailAction } from "@/components/ui/email-action";
 import { Reveal } from "@/components/ui/reveal";
 import { ContactForm } from "@/components/sections/contact-form";
 import { buildMetadata } from "@/lib/seo";
@@ -53,12 +54,7 @@ export default function ContactPage() {
                   <Mail aria-hidden className="mt-0.5 size-5 shrink-0 text-accent-ink" />
                   <div>
                     <p className="eyebrow mb-1">Email</p>
-                    <a
-                      href={`mailto:${site.email}`}
-                      className="break-all transition-colors hover:text-accent-ink"
-                    >
-                      {site.email}
-                    </a>
+                    <EmailAction />
                   </div>
                 </li>
                 <li className="flex gap-4">
